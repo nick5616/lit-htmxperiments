@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>SRE Dashboard</title>
+        <script type="importmap">
+            {
+                "imports": {
+                    "lit": "https://cdn.skypack.dev/lit"
+                }
+            }
+        </script>
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        <script type="module" src="./components/servicesList.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <h1>SRE Dashboard</h1>
+            <services-list />
+        </div>
+    </body>
+</html>

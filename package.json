@@ -1,0 +1,15 @@
+{
+  "name": "lit-htmxperiments",
+  "version": "1.0.0",
+  "description": "Playing around with Lit, HTMX, and Flask, to make a lightweight tool.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lit": "^3.3.1"
+  }
+}

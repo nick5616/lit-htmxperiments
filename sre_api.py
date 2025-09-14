@@ -5,8 +5,12 @@ from datetime import datetime
 from functools import wraps
 
 from flask import Flask, jsonify, request, g
+from flask_cors import CORS
+
+from seed_data import seed_data, generate_logs_for_service
 
 app = Flask(__name__)
+CORS(app)
 
 # ----------------------------------------------------------------------
 #  In‑memory "database"
@@ -24,38 +28,19 @@ def now_iso():
     return datetime.utcnow().isoformat(timespec="seconds") + "Z"
 
 
-def seed_data():
-    """Populate the demo data set."""
-    services = [
-        {"id": "svc-api", "name": "api-gateway", "status": "healthy", "version": "1.24.3",
-         "replicas": 4, "desired_replicas": 4, "owner": "sre", "last_deploy_at": now_iso()},
-        {"id": "svc-auth", "name": "auth-service", "status": "degraded", "version": "2.9.1",
-         "replicas": 3, "desired_replicas": 3, "owner": "platform", "last_deploy_at": now_iso()},
-        {"id": "svc-billing", "name": "billing", "status": "healthy", "version": "3.7.0",
-         "replicas": 2, "desired_replicas": 2, "owner": "finops", "last_deploy_at": now_iso()},
-        {"id": "svc-search", "name": "search", "status": "down", "version": "0.19.5",
-         "replicas": 0, "desired_replicas": 0, "owner": "ml", "last_deploy_at": now_iso()},
-        {"id": "svc-notify", "name": "notifications", "status": "healthy", "version": "1.2.8",
-         "replicas": 1, "desired_replicas": 1, "owner": "growth", "last_deploy_at": now_iso()},
-    ]
-    for s in services:
-        SERVICES[s["id"]] = s
-        LOGS[s["id"]] = [
-            f'{now_iso()} INFO {s["name"]} started version={s["version"]}',
-            f'{now_iso()} INFO {s["name"]} health={s["status"]}',
-        ]
+# Initialize data using the external seed_data module
+services_data, incidents_data = seed_data()
+print(f"DEBUG: Generated {len(services_data)} services and {len(incidents_data)} incidents")
 
-    incidents = [
-        {"id": "inc-1001", "service_id": "svc-search", "severity": "high", "status": "open",
-         "title": "Search 500 errors spike", "created_at": now_iso(), "acked_by": None, "resolved_by": None},
-        {"id": "inc-1002", "service_id": "svc-auth", "severity": "medium", "status": "acknowledged",
-         "title": "Login latency increased", "created_at": now_iso(), "acked_by": "alice", "resolved_by": None},
-    ]
-    for i in incidents:
-        INCIDENTS[i["id"]] = i
+# Populate the in-memory databases
+for service in services_data:
+    SERVICES[service["id"]] = service
+    LOGS[service["id"]] = generate_logs_for_service(service)
 
+for incident in incidents_data:
+    INCIDENTS[incident["id"]] = incident
 
-seed_data()
+print(f"DEBUG: Populated SERVICES with {len(SERVICES)} services")
 
 # ----------------------------------------------------------------------
 #  Helpers & Middleware
@@ -243,6 +228,11 @@ def list_services():
     page_items, meta = paginate(items)
     return jsonify({"data": page_items, "meta": meta})
 
+@app.get("/v1/services/count")
+@require_api_key
+def get_services_count():
+    print(f"DEBUG: Count endpoint called, SERVICES has {len(SERVICES)} items")
+    return jsonify({"data": len(SERVICES)})
 
 @app.get("/v1/services/<sid>")
 @require_api_key
