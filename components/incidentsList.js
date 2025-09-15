@@ -193,45 +193,19 @@ class IncidentsList extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
+        console.log("IncidentsList connected to DOM");
+        console.log("IncidentsList parent element:", this.parentElement);
+        console.log(
+            "IncidentsList previous sibling:",
+            this.previousElementSibling
+        );
         this.loadIncidents();
     }
 
-    // HTMX calls this method when it receives JSON data
-    handleIncidentsResponse(event) {
-        const response = JSON.parse(event.detail.xhr.response);
-        this.incidents = response.data;
-        this.count = response.meta.total;
-        this.loading = false;
-        this.requestUpdate();
-    }
-
-    // HTMX calls this method when an incident is updated
-    handleIncidentUpdate(event) {
-        const response = JSON.parse(event.detail.xhr.response);
-        const updatedIncident = response.data;
-
-        // Update the incident in our local array
-        const index = this.incidents.findIndex(
-            (inc) => inc.id === updatedIncident.id
-        );
-        if (index !== -1) {
-            this.incidents[index] = updatedIncident;
-            this.requestUpdate();
-        }
-    }
-
-    // HTMX calls this method when a new incident is created
-    handleIncidentCreated(event) {
-        const response = JSON.parse(event.detail.xhr.response);
-        const newIncident = response.data;
-
-        // Add the new incident to our local array
-        this.incidents.unshift(newIncident);
-        this.count++;
-        this.requestUpdate();
-    }
+    // Old HTMX handler methods removed - now using pure JavaScript
 
     async loadIncidents() {
+        console.log("loadIncidents called");
         this.loading = true;
         this.requestUpdate();
 
@@ -250,13 +224,18 @@ class IncidentsList extends LitElement {
             url.searchParams.set("page", this.page);
             url.searchParams.set("per_page", this.per_page);
 
+            console.log("Fetching from URL:", url.toString());
+
             const response = await fetch(url, {
                 headers: {
                     "X-API-Key": API_KEY,
                 },
             });
 
+            console.log("Response status:", response.status);
             const data = await response.json();
+            console.log("Incidents data:", data);
+
             this.incidents = data.data;
             this.count = data.meta.total;
             this.loading = false;
@@ -288,18 +267,111 @@ class IncidentsList extends LitElement {
         }
     }
 
+    async createTestIncident() {
+        try {
+            const response = await fetch(`${API_URL}/incidents`, {
+                method: "POST",
+                headers: {
+                    "X-API-Key": API_KEY,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    service_id: "svc-001",
+                    title: "Test Incident",
+                    severity: "medium",
+                }),
+            });
+
+            const data = await response.json();
+            const newIncident = data.data;
+
+            // Add the new incident to our local array
+            this.incidents.unshift(newIncident);
+            this.count++;
+            this.requestUpdate();
+        } catch (error) {
+            console.error("Failed to create incident:", error);
+        }
+    }
+
+    async acknowledgeIncident(incidentId) {
+        try {
+            const response = await fetch(
+                `${API_URL}/incidents/${incidentId}/ack`,
+                {
+                    method: "POST",
+                    headers: {
+                        "X-API-Key": API_KEY,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        actor: "user",
+                    }),
+                }
+            );
+
+            const data = await response.json();
+            const updatedIncident = data.data;
+
+            // Update the incident in our local array
+            const index = this.incidents.findIndex(
+                (inc) => inc.id === updatedIncident.id
+            );
+            if (index !== -1) {
+                this.incidents[index] = updatedIncident;
+                this.requestUpdate();
+            }
+        } catch (error) {
+            console.error("Failed to acknowledge incident:", error);
+        }
+    }
+
+    async resolveIncident(incidentId) {
+        try {
+            const response = await fetch(
+                `${API_URL}/incidents/${incidentId}/resolve`,
+                {
+                    method: "POST",
+                    headers: {
+                        "X-API-Key": API_KEY,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        actor: "user",
+                    }),
+                }
+            );
+
+            const data = await response.json();
+            const updatedIncident = data.data;
+
+            // Update the incident in our local array
+            const index = this.incidents.findIndex(
+                (inc) => inc.id === updatedIncident.id
+            );
+            if (index !== -1) {
+                this.incidents[index] = updatedIncident;
+                this.requestUpdate();
+            }
+        } catch (error) {
+            console.error("Failed to resolve incident:", error);
+        }
+    }
+
     render() {
+        console.log(
+            "IncidentsList render called, incidents:",
+            this.incidents.length,
+            "loading:",
+            this.loading
+        );
         return html`
             <div class="incidents-container">
                 <div class="incidents-header">
                     <h2 class="incidents-title">Incidents (${this.count})</h2>
                     <button
                         class="btn-create"
-                        hx-post="/v1/incidents"
-                        hx-trigger="click"
-                        hx-headers='{"X-API-Key": "${API_KEY}", "Content-Type": "application/json"}'
-                        hx-vals='{"service_id": "svc-001", "title": "Test Incident", "severity": "medium"}'
-                        hx-on::after-request="this.handleIncidentCreated(event)"
+                        @click=${this.createTestIncident}
                     >
                         Create Test Incident
                     </button>
@@ -397,10 +469,10 @@ class IncidentsList extends LitElement {
                                     ? html`
                                           <button
                                               class="btn-ack"
-                                              hx-post="/v1/incidents/${incident.id}/ack"
-                                              hx-headers='{"X-API-Key": "${API_KEY}", "Content-Type": "application/json"}'
-                                              hx-vals='{"actor": "user"}'
-                                              hx-on::after-request="this.handleIncidentUpdate(event)"
+                                              @click=${() =>
+                                                  this.acknowledgeIncident(
+                                                      incident.id
+                                                  )}
                                           >
                                               Acknowledge
                                           </button>
@@ -411,10 +483,10 @@ class IncidentsList extends LitElement {
                                     ? html`
                                           <button
                                               class="btn-resolve"
-                                              hx-post="/v1/incidents/${incident.id}/resolve"
-                                              hx-headers='{"X-API-Key": "${API_KEY}", "Content-Type": "application/json"}'
-                                              hx-vals='{"actor": "user"}'
-                                              hx-on::after-request="this.handleIncidentUpdate(event)"
+                                              @click=${() =>
+                                                  this.resolveIncident(
+                                                      incident.id
+                                                  )}
                                           >
                                               Resolve
                                           </button>

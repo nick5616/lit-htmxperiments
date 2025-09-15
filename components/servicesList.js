@@ -209,6 +209,8 @@ class ServicesList extends LitElement {
     connectedCallback() {
         super.connectedCallback();
         console.log("ServicesList connected to DOM");
+        console.log("ServicesList parent element:", this.parentElement);
+        console.log("ServicesList next sibling:", this.nextElementSibling);
 
         if (!this.hasLoaded) {
             this.loadServices();
