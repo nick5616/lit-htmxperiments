@@ -95,6 +95,97 @@ class ServicesList extends LitElement {
             align-items: center;
             gap: 10px;
         }
+
+        /* Status chip styles */
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .status-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Status colors */
+        .status-healthy {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-color: #4caf50;
+        }
+
+        .status-degraded {
+            background: #fff3e0;
+            color: #ef6c00;
+            border-color: #ff9800;
+        }
+
+        .status-down {
+            background: #ffebee;
+            color: #c62828;
+            border-color: #f44336;
+        }
+
+        .status-maintenance {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            border-color: #9c27b0;
+        }
+
+        .status-scaling {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-color: #2196f3;
+        }
+
+        /* Icon colors */
+        .status-healthy .status-icon {
+            background: #4caf50;
+        }
+
+        .status-degraded .status-icon {
+            background: #ff9800;
+        }
+
+        .status-down .status-icon {
+            background: #f44336;
+        }
+
+        .status-maintenance .status-icon {
+            background: #9c27b0;
+        }
+
+        .status-scaling .status-icon {
+            background: #2196f3;
+        }
+
+        /* Pulsing animation for down status */
+        .status-down {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
     `;
 
     get hasPreviousPage() {
@@ -179,8 +270,6 @@ class ServicesList extends LitElement {
     }
 
     render() {
-        console.log("this.hasPreviousPage", this.hasPreviousPage);
-        console.log("this.hasNextPage", this.hasNextPage);
         return html`
             <div class="services-list">
                 <div class="services-list-header">
@@ -192,7 +281,7 @@ class ServicesList extends LitElement {
                     <button @click=${this.loadServices}>Reload Services</button>
                 </div>
                 ${this.services.map(
-                    (service) =>
+                    (service, index) =>
                         html`<div class="service-item">
                             <div class="service-item-header">
                                 <div class="service-item-name-version">
@@ -200,7 +289,14 @@ class ServicesList extends LitElement {
                                     <p>Version: ${service.version}</p>
                                 </div>
                                 <div class="service-item-status">
-                                    <p>Status: ${service.status}</p>
+                                    <span
+                                        class="status-chip status-${service.status.toLowerCase()}"
+                                    >
+                                        <span class="status-icon"></span>
+                                        <span class="status-text"
+                                            >${service.status}</span
+                                        >
+                                    </span>
                                 </div>
                             </div>
                             <div class="service-item-body">

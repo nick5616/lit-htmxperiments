@@ -12,12 +12,32 @@
             }
         </script>
         <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
         <script type="module" src="./components/servicesList.js"></script>
+        <script type="module" src="./components/incidentsList.js"></script>
+        <script type="module" src="./components/statusIndicator.js"></script>
+
+        <link rel="stylesheet" href="./index.css" />
     </head>
     <body>
-        <div class="container">
+        <div class="global-header">
             <h1>SRE Dashboard</h1>
-            <services-list />
+            <status-indicator />
         </div>
+
+        <services-list />
+        <incidents-list id="incidents-list" />
+
+        <!-- <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <button
+                hx-post="http://localhost:5001/v1/incidents"
+                hx-vals='{"service_id": "svc-001", "title": "Quick Incident", "severity": "medium"}'
+                hx-target="#incidents-list"
+                hx-headers='{"X-API-Key": "dev-secret"}'
+            >
+                Create Quick Incident
+            </button>
+        </div> -->
     </body>
 </html>
