@@ -193,19 +193,10 @@ class IncidentsList extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        console.log("IncidentsList connected to DOM");
-        console.log("IncidentsList parent element:", this.parentElement);
-        console.log(
-            "IncidentsList previous sibling:",
-            this.previousElementSibling
-        );
         this.loadIncidents();
     }
 
-    // Old HTMX handler methods removed - now using pure JavaScript
-
     async loadIncidents() {
-        console.log("loadIncidents called");
         this.loading = true;
         this.requestUpdate();
 
@@ -224,17 +215,13 @@ class IncidentsList extends LitElement {
             url.searchParams.set("page", this.page);
             url.searchParams.set("per_page", this.per_page);
 
-            console.log("Fetching from URL:", url.toString());
-
             const response = await fetch(url, {
                 headers: {
                     "X-API-Key": API_KEY,
                 },
             });
 
-            console.log("Response status:", response.status);
             const data = await response.json();
-            console.log("Incidents data:", data);
 
             this.incidents = data.data;
             this.count = data.meta.total;
@@ -249,7 +236,6 @@ class IncidentsList extends LitElement {
 
     handleFilterChange(event) {
         const { name, value } = event.target;
-        console.log("handleFilterChange called", name, value);
         this.filters[name] = value;
         this.loadIncidents();
     }
@@ -360,12 +346,6 @@ class IncidentsList extends LitElement {
     }
 
     render() {
-        console.log(
-            "IncidentsList render called, incidents:",
-            this.incidents.length,
-            "loading:",
-            this.loading
-        );
         return html`
             <div class="incidents-container">
                 <div class="incidents-header">
@@ -427,10 +407,6 @@ class IncidentsList extends LitElement {
                         />
                     </div>
                 </div>
-
-                <!-- Initial load trigger removed - using JavaScript instead -->
-
-                <!-- Lit renders the incidents -->
                 ${this.loading
                     ? html`<div class="loading">Loading incidents...</div>`
                     : ""}
@@ -507,8 +483,6 @@ class IncidentsList extends LitElement {
                         </div>
                     `
                 )}
-
-                <!-- Pagination -->
                 <div class="pagination">
                     <div class="pagination-buttons">
                         <button
