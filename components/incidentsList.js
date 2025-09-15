@@ -249,6 +249,7 @@ class IncidentsList extends LitElement {
 
     handleFilterChange(event) {
         const { name, value } = event.target;
+        console.log("handleFilterChange called", name, value);
         this.filters[name] = value;
         this.loadIncidents();
     }
@@ -369,12 +370,22 @@ class IncidentsList extends LitElement {
             <div class="incidents-container">
                 <div class="incidents-header">
                     <h2 class="incidents-title">Incidents (${this.count})</h2>
-                    <button
-                        class="btn-create"
-                        @click=${this.createTestIncident}
-                    >
-                        Create Test Incident
-                    </button>
+                    <div class="pagination-buttons">
+                        <button
+                            @click=${this.loadPreviousPage}
+                            ?disabled=${this.page <= 1}
+                        >
+                            Previous
+                        </button>
+
+                        <button
+                            @click=${this.loadNextPage}
+                            ?disabled=${this.page >=
+                            Math.ceil(this.count / this.per_page)}
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Filters using JavaScript -->
@@ -500,20 +511,20 @@ class IncidentsList extends LitElement {
                 <!-- Pagination -->
                 <div class="pagination">
                     <div class="pagination-buttons">
-                        ${this.page > 1
-                            ? html`
-                                  <button @click=${this.loadPreviousPage}>
-                                      Previous
-                                  </button>
-                              `
-                            : ""}
-                        ${this.page < Math.ceil(this.count / this.per_page)
-                            ? html`
-                                  <button @click=${this.loadNextPage}>
-                                      Next
-                                  </button>
-                              `
-                            : ""}
+                        <button
+                            @click=${this.loadPreviousPage}
+                            ?disabled=${this.page <= 1}
+                        >
+                            Previous
+                        </button>
+
+                        <button
+                            @click=${this.loadNextPage}
+                            ?disabled=${this.page >=
+                            Math.ceil(this.count / this.per_page)}
+                        >
+                            Next
+                        </button>
                     </div>
                     <div class="pagination-info">
                         Page ${this.page} of
