@@ -59,7 +59,7 @@ def add_request_id_header(resp):
 
 @app.after_request
 def allow_iframe_embedding(resp):
-    resp.headers.discard("X-Frame-Options")
+    resp.headers.remove("X-Frame-Options")
     resp.headers["Content-Security-Policy"] = "frame-ancestors *"
     return resp
 
