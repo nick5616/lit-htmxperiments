@@ -74,7 +74,7 @@ class StatusIndicator extends LitElement {
 
         try {
             const response = await fetch(
-                `${API_URL.replace("/v1", "")}/healthz`,
+                `${API_URL}/healthz`,
                 {
                     headers: {
                         "X-API-Key": API_KEY,

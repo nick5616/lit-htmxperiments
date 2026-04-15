@@ -193,7 +193,7 @@ def _simulate_operation(op_id):
 # ----------------------------------------------------------------------
 #  API Endpoints
 # ----------------------------------------------------------------------
-@app.get("/healthz")
+@app.get("/v1/healthz")
 def healthz():
     """Simple health check endpoint."""
     return jsonify({"status": "ok", "time": now_iso()})
