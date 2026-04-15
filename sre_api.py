@@ -57,6 +57,13 @@ def add_request_id_header(resp):
     return resp
 
 
+@app.after_request
+def allow_iframe_embedding(resp):
+    resp.headers.discard("X-Frame-Options")
+    resp.headers["Content-Security-Policy"] = "frame-ancestors *"
+    return resp
+
+
 def error_response(status, message, code=None, details=None):
     """Consistent JSON error format."""
     payload = {
